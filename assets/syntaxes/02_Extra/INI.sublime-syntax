@@ -5,8 +5,8 @@ name: INI
 file_extensions:
   - ini
   - INI
-  - inf
-  - INF
+  - "inf"
+  - "INF"
   - reg
   - REG
   - lng
@@ -16,6 +16,9 @@ file_extensions:
   - url
   - URL
   - .editorconfig
+  - .coveragerc
+  - .pylintrc
+  - .gitlint
   - .hgrc
   - hgrc
 scope: source.ini

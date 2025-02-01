@@ -4,7 +4,7 @@ use std::path::Path;
 
 use once_cell::unsync::OnceCell;
 
-use syntect::highlighting::{Theme, ThemeSet};
+use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 
 use path_abs::PathAbs;
@@ -13,7 +13,10 @@ use crate::error::*;
 use crate::input::{InputReader, OpenedInput};
 use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
 use crate::syntax_mapping::MappingTarget;
+use crate::theme::{default_theme, ColorScheme};
 use crate::{bat_warning, SyntaxMapping};
+
+use lazy_theme_set::LazyThemeSet;
 
 use serialized_syntax_set::*;
 
@@ -23,6 +26,7 @@ pub use crate::assets::build_assets::*;
 pub(crate) mod assets_metadata;
 #[cfg(feature = "build-assets")]
 mod build_assets;
+mod lazy_theme_set;
 mod serialized_syntax_set;
 
 #[derive(Debug)]
@@ -30,7 +34,7 @@ pub struct HighlightingAssets {
     syntax_set_cell: OnceCell<SyntaxSet>,
     serialized_syntax_set: SerializedSyntaxSet,
 
-    theme_set: ThemeSet,
+    theme_set: LazyThemeSet,
     fallback_theme: Option<&'static str>,
 }
 
@@ -40,24 +44,30 @@ pub struct SyntaxReferenceInSet<'a> {
     pub syntax_set: &'a SyntaxSet,
 }
 
-/// Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_SYNTAXES: bool = true;
+/// Lazy-loaded syntaxes are already compressed, and we don't want to compress
+/// already compressed data.
+pub(crate) const COMPRESS_SYNTAXES: bool = false;
 
-/// Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_THEMES: bool = true;
+/// We don't want to compress our [LazyThemeSet] since the lazy-loaded themes
+/// within it are already compressed, and compressing another time just makes
+/// performance suffer
+pub(crate) const COMPRESS_THEMES: bool = false;
+
+/// Compress for size of ~40 kB instead of ~200 kB without much difference in
+/// performance due to lazy-loading
+pub(crate) const COMPRESS_LAZY_THEMES: bool = true;
+
+/// Compress for size of ~10 kB instead of ~120 kB
+pub(crate) const COMPRESS_ACKNOWLEDGEMENTS: bool = true;
 
 impl HighlightingAssets {
-    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: ThemeSet) -> Self {
+    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: LazyThemeSet) -> Self {
         HighlightingAssets {
             syntax_set_cell: OnceCell::new(),
             serialized_syntax_set,
             theme_set,
             fallback_theme: None,
         }
-    }
-
-    pub fn default_theme() -> &'static str {
-        "Monokai Extended"
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
@@ -78,7 +88,8 @@ impl HighlightingAssets {
         self.fallback_theme = Some(theme);
     }
 
-    fn get_syntax_set(&self) -> Result<&SyntaxSet> {
+    /// Return the collection of syntect syntax definitions.
+    pub fn get_syntax_set(&self) -> Result<&SyntaxSet> {
         self.syntax_set_cell
             .get_or_try_init(|| self.serialized_syntax_set.deserialize())
     }
@@ -95,12 +106,12 @@ impl HighlightingAssets {
         Ok(self.get_syntax_set()?.syntaxes())
     }
 
-    fn get_theme_set(&self) -> &ThemeSet {
+    fn get_theme_set(&self) -> &LazyThemeSet {
         &self.theme_set
     }
 
     pub fn themes(&self) -> impl Iterator<Item = &str> {
-        self.get_theme_set().themes.keys().map(|s| s.as_ref())
+        self.get_theme_set().themes()
     }
 
     /// Use [Self::get_syntax_for_path] instead
@@ -174,8 +185,9 @@ impl HighlightingAssets {
         }
     }
 
-    pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
-        match self.get_theme_set().themes.get(theme) {
+    /// Look up a syntect theme by name.
+    pub fn get_theme(&self, theme: &str) -> &Theme {
+        match self.get_theme_set().get(theme) {
             Some(theme) => theme,
             None => {
                 if theme == "ansi-light" || theme == "ansi-dark" {
@@ -185,8 +197,12 @@ impl HighlightingAssets {
                 if !theme.is_empty() {
                     bat_warning!("Unknown theme '{}', using default.", theme)
                 }
-                &self.get_theme_set().themes
-                    [self.fallback_theme.unwrap_or_else(|| Self::default_theme())]
+                self.get_theme_set()
+                    .get(
+                        self.fallback_theme
+                            .unwrap_or_else(|| default_theme(ColorScheme::Dark)),
+                    )
+                    .expect("something is very wrong if the default theme is missing")
             }
         }
     }
@@ -291,8 +307,15 @@ pub(crate) fn get_serialized_integrated_syntaxset() -> &'static [u8] {
     include_bytes!("../assets/syntaxes.bin")
 }
 
-pub(crate) fn get_integrated_themeset() -> ThemeSet {
+pub(crate) fn get_integrated_themeset() -> LazyThemeSet {
     from_binary(include_bytes!("../assets/themes.bin"), COMPRESS_THEMES)
+}
+
+pub fn get_acknowledgements() -> String {
+    from_binary(
+        include_bytes!("../assets/acknowledgements.bin"),
+        COMPRESS_ACKNOWLEDGEMENTS,
+    )
 }
 
 pub(crate) fn from_binary<T: serde::de::DeserializeOwned>(v: &[u8], compressed: bool) -> T {
@@ -310,7 +333,7 @@ fn asset_from_contents<T: serde::de::DeserializeOwned>(
     } else {
         bincode::deserialize_from(contents)
     }
-    .map_err(|_| format!("Could not parse {}", description).into())
+    .map_err(|_| format!("Could not parse {description}").into())
 }
 
 fn asset_from_cache<T: serde::de::DeserializeOwned>(
@@ -326,7 +349,7 @@ fn asset_from_cache<T: serde::de::DeserializeOwned>(
         )
     })?;
     asset_from_contents(&contents[..], description, compressed)
-        .map_err(|_| format!("Could not parse cached {}", description).into())
+        .map_err(|_| format!("Could not parse cached {description}").into())
 }
 
 #[cfg(test)]
@@ -351,7 +374,7 @@ mod tests {
         fn new() -> Self {
             SyntaxDetectionTest {
                 assets: HighlightingAssets::from_binary(),
-                syntax_mapping: SyntaxMapping::builtin(),
+                syntax_mapping: SyntaxMapping::new(),
                 temp_dir: TempDir::new().expect("creation of temporary directory"),
             }
         }
@@ -376,7 +399,7 @@ mod tests {
             let file_path = self.temp_dir.path().join(file_name);
             {
                 let mut temp_file = File::create(&file_path).unwrap();
-                writeln!(temp_file, "{}", first_line).unwrap();
+                writeln!(temp_file, "{first_line}").unwrap();
             }
 
             let input = Input::ordinary_file(&file_path);
@@ -424,8 +447,7 @@ mod tests {
 
             if !consistent {
                 eprintln!(
-                    "Inconsistent syntax detection:\nFor File: {}\nFor Reader: {}",
-                    as_file, as_reader
+                    "Inconsistent syntax detection:\nFor File: {as_file}\nFor Reader: {as_reader}"
                 )
             }
 
@@ -559,13 +581,22 @@ mod tests {
     }
 
     #[test]
-    fn syntax_detection_is_case_sensitive() {
+    fn syntax_detection_is_case_insensitive() {
         let mut test = SyntaxDetectionTest::new();
 
-        assert_ne!(test.syntax_for_file("README.MD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.md"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.mD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.Md"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
+
+        // Adding a mapping for "MD" in addition to "md" should not break the mapping
         test.syntax_mapping
             .insert("*.MD", MappingTarget::MapTo("Markdown"))
             .ok();
+
+        assert_eq!(test.syntax_for_file("README.md"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.mD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.Md"), "Markdown");
         assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
     }
 

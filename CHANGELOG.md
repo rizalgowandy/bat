@@ -2,27 +2,337 @@
 
 ## Features
 
+## Bugfixes
+- Fix `BAT_THEME_DARK` and `BAT_THEME_LIGHT` being ignored, see issue #3171 and PR #3168 (@bash)
+- Prevent `--list-themes` from outputting default theme info to stdout when it is piped, see #3189 (@einfachIrgendwer0815)
+
+## Other
+
+- Work around build failures when building `bat` from vendored sources #3179 (@dtolnay)
+
+## Syntaxes
+
+- Add syntax mapping for `paru` configuration files #3182 (@cyqsimon)
+- Add support for [Idris 2 programming language](https://www.idris-lang.org/) #3150 (@buzden)
+
+## Themes
+
+## `bat` as a library
+
+# v0.25.0
+
+## Features
+
+- Set terminal title to file names when Paging is not Paging::Never #2807 (@Oliver-Looney)
+- `bat --squeeze-blank`/`bat -s` will now squeeze consecutive empty lines, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
+- `bat --squeeze-limit` to set the maximum number of empty consecutive when using `--squeeze-blank`, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
+- `PrettyPrinter::squeeze_empty_lines` to support line squeezing for bat as a library, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
+- Syntax highlighting for JavaScript files that start with `#!/usr/bin/env bun` #2913 (@sharunkumar)
+- `bat --strip-ansi={never,always,auto}` to remove ANSI escape sequences from bat's input, see #2999 (@eth-p)
+- Add or remove individual style components without replacing all styles #2929 (@eth-p)
+- Automatically choose theme based on the terminal's color scheme, see #2896 (@bash)
+- Add option `--binary=as-text` for printing binary content, see issue #2974 and PR #2976 (@einfachIrgendwer0815)
+- Make shell completions available via `--completion <shell>`, see issue #2057 and PR #3126 (@einfachIrgendwer0815)
+- Syntax highlighting for puppet code blocks within Markdown files, see #3152 (@liliwilson)
+
+## Bugfixes
+
+- Fix long file name wrapping in header, see #2835 (@FilipRazek)
+- Fix `NO_COLOR` support, see #2767 (@acuteenvy)
+- Fix handling of inputs with OSC ANSI escape sequences, see #2541 and #2544 (@eth-p)
+- Fix handling of inputs with combined ANSI color and attribute sequences, see #2185 and #2856 (@eth-p)
+- Fix panel width when line 10000 wraps, see #2854 (@eth-p)
+- Fix compile issue of `time` dependency caused by standard library regression #3045 (@cyqsimon)
+- Fix override behavior of --plain and --paging, see issue #2731 and PR #3108 (@einfachIrgendwer0815)
+- Fix bugs in `$LESSOPEN` support, see #2805 (@Anomalocaridid)
+
+## Other
+
+- Upgrade to Rust 2021 edition #2748 (@cyqsimon)
+- Refactor and cleanup build script #2756 (@cyqsimon)
+- Checks changelog has been written to for PRs in CI #2766 (@cyqsimon)
+  - Use GitHub API to get correct PR submitter #2791 (@cyqsimon)
+- Minor benchmark script improvements #2768 (@cyqsimon)
+- Update Arch Linux package URL in README files #2779 (@brunobell)
+- Update and improve `zsh` completion, see #2772 (@okapia)
+- More extensible syntax mapping mechanism #2755 (@cyqsimon)
+- Use proper Architecture for Debian packages built for musl, see #2811 (@Enselic)
+- Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
+- Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
+- Update git2 dependency to v0.18.2, see #2852 (@eth-p)
+- Improve performance when color output disabled, see #2397 and #2857 (@eth-p)
+- Relax syntax mapping rule restrictions to allow brace expansion #2865 (@cyqsimon)
+- Apply clippy fixes #2864 (@cyqsimon)
+- Faster startup by offloading glob matcher building to a worker thread #2868 (@cyqsimon)
+- Display which theme is the default one in basic output (no colors), see #2937 (@sblondon)
+- Display which theme is the default one in colored output, see #2838 (@sblondon)
+- Add aarch64-apple-darwin ("Apple Silicon") binary tarballs to releases, see #2967 (@someposer)
+- Update the Lisp syntax, see #2970 (@ccqpein)
+- Use bat's ANSI iterator during tab expansion, see #2998 (@eth-p)
+- Support 'statically linked binary' for aarch64 in 'Release' page, see #2992 (@tzq0301)
+- Update options in shell completions and the man page of `bat`, see #2995 (@akinomyoga)
+- Update nix dev-dependency to v0.29.0, see #3112 (@decathorpe)
+- Bump MSRV to [1.74](https://blog.rust-lang.org/2023/11/16/Rust-1.74.0.html), see #3154 (@keith-hall)
+- Update clircle dependency to remove winapi transitive dependency, see #3113 (@niklasmohrin)
+
+## Syntaxes
+
+- `cmd-help`: scope subcommands followed by other terms, and other misc improvements, see #2819 (@victor-gp)
+- Upgrade JQ syntax, see #2820 (@dependabot[bot])
+- Add syntax mapping for quadman quadlets #2866 (@cyqsimon)
+- Map containers .conf files to TOML syntax #2867 (@cyqsimon)
+- Associate `.xsh` files with `xonsh` syntax that is Python, see #2840 (@anki-code)
+- Associate JSON with Comments `.jsonc` with `json` syntax, see #2795 (@mxaddict)
+- Associate JSON-LD `.jsonld` files with `json` syntax, see #3037 (@vorburger)
+- Associate `.textproto` files with `ProtoBuf` syntax, see #3038 (@vorburger)
+- Associate GeoJSON `.geojson` files with `json` syntax, see #3084 (@mvaaltola)
+- Associate `.aws/{config,credentials}`, see #2795 (@mxaddict)
+- Associate Wireguard config `/etc/wireguard/*.conf`, see #2874 (@cyqsimon)
+- Add support for [CFML](https://www.adobe.com/products/coldfusion-family.html), see #3031 (@brenton-at-pieces)
+- Map `*.mkd` files to `Markdown` syntax, see issue #3060 and PR #3061 (@einfachIrgendwer0815)
+- Add syntax mapping for CITATION.cff, see #3103 (@Ugzuzg)
+- Add syntax mapping for kubernetes config files #3049 (@cyqsimon)
+- Adds support for pipe delimiter for CSV #3115 (@pratik-m)
+- Add syntax mapping for `/etc/pacman.conf` #2961 (@cyqsimon)
+- Associate `uv.lock` with `TOML` syntax, see #3132 (@fepegar)
+
+## Themes
+
+- Patched/improved themes for better Manpage syntax highlighting support, see #2994 (@keith-hall).
+
+## `bat` as a library
+
+- Changes to `syntax_mapping::SyntaxMapping` #2755 (@cyqsimon)
+  - `SyntaxMapping::get_syntax_for` is now correctly public
+  - [BREAKING] `SyntaxMapping::{empty,builtin}` are removed; use `SyntaxMapping::new` instead
+  - [BREAKING] `SyntaxMapping::mappings` is replaced by `SyntaxMapping::{builtin,custom,all}_mappings`
+- Make `Controller::run_with_error_handler`'s error handler `FnMut`, see #2831 (@rhysd)
+- Improve compile time by 20%, see #2815 (@dtolnay)
+- Add `theme::theme` for choosing an appropriate theme based on the
+  terminal's color scheme, see #2896 (@bash)
+  - [BREAKING] Remove `HighlightingAssets::default_theme`. Use `theme::default_theme` instead.
+- Add `PrettyPrinter::print_with_writer` for custom output destinations, see #3070 (@kojix2)
+
+# v0.24.0
+
+## Features
+
+- Add environment variable `BAT_PAGING`, see #2629 (@einfachIrgendwer0815)
+- Add opt-in (`--features lessopen`) support for `LESSOPEN` and `LESSCLOSE`. See #1597, #1739, #2444, #2602, and #2662 (@Anomalocaridid)
+
+## Bugfixes
+
+- Fix `more` not being found on Windows when provided via `BAT_PAGER`, see #2570, #2580, and #2651 (@mataha)
+- Switched default behavior of `--map-syntax` to be case insensitive #2520
+- Updated version of `serde_yaml` to `0.9`. See #2627 (@Raghav-Bell)
+- Fix arithmetic overflow in `LineRange::from` and `LineRange::parse_range`, see #2674, #2698 (@skoriop)
+- Fix paging not happening when stdout is interactive but stdin is not, see #2574 (@Nigecat)
+- Make `-pp` override `--paging` and vice versa when passed as a later argument, see #2660 (@J-Kappes)
+
+## Other
+
+- Output directory for generated assets (completion, manual) can be customized, see #2515 (@tranzystorek-io)
+- Use the `is-terminal` crate instead of `atty`, see #2530 (@nickelc)
+- Add Winget Releaser workflow, see #2519 (@sitiom)
+- Bump MSRV to 1.70, see #2651 (@mataha)
+
+## Syntaxes
+
+- Associate `os-release` with `bash` syntax, see #2587 (@cyqsimon)
+- Associate `Containerfile` with `Dockerfile` syntax, see #2606 (@einfachIrgendwer0815)
+- Replaced quotes with double quotes so fzf integration example script works on windows and linux. see #2095 (@johnmatthiggins)
+- Associate `ksh` files with `bash` syntax, see #2633 (@johnmatthiggins)
+- Associate `sarif` files with `JSON` syntax, see #2695 (@rhysd)
+- Associate `ron` files with `rust` syntax, see #2427 (@YeungOnion)
+- Add support for [WebGPU Shader Language](https://www.w3.org/TR/WGSL/), see #2692 (@rhysd)
+- Add `.dpkg-new` and `.dpkg-tmp` to ignored suffixe, see #2595 (@scop)
+- fix: Add syntax mapping `*.jsonl` => `json`, see #2539 (@WinterCore)
+- Update `Julia` syntax, see #2553 (@dependabot)
+- add `NSIS` support, see #2577 (@idleberg)
+- Update `ssh-config`, see #2697 (@mrmeszaros)
+- Add syntax mapping `*.debdiff` => `diff`, see #2947 (@jacg)
+
+## `bat` as a library
+
+- Add optional output_buffer arg to `Controller::run()` and `Controller::run_with_error_handler()`, see #2618 (@Piturnah)
+
+
+# v0.23.0
+
+## Features
+
+- Implemented `-S` and `--chop-long-lines` flags as aliases for `--wrap=never`. See #2309 (@johnmatthiggins)
+- Breaking change: Environment variables can now override config file settings (but command-line arguments still have the highest precedence), see #1152, #1281, and #2381 (@aaronkollasch)
+- Implemented `--nonprintable-notation=caret` to support showing non-printable characters using caret notation. See #2429 (@einfachIrgendwer0815)
+
+## Bugfixes
+
+- Fix `bat cache --clear` not clearing the `--target` dir if specified. See #2393 (@miles170)
+
+## Other
+
+- Various bash completion improvements, see #2310 (@scop)
+- Disable completion of `cache` subcommand, see #2399 (@cyqsimon)
+- Signifigantly improve startup performance on macOS, see #2442 (@BlackHoleFox)
+- Bump MSRV to 1.62, see #2496 (@Enselic)
+
+## Syntaxes
+
+- Added support for Ada, see #1300 and #2316 (@dkm)
+- Added `todo.txt` syntax, see #2375 (@BANOnotIT)
+- Improve Manpage.sublime-syntax. See #2364 (@Freed-Wu) and #2461 (@keith-hall)
+- Added a new `requirements.txt` syntax, see #2361 (@Freed-Wu)
+- Added a new VimHelp syntax, see #2366 (@Freed-Wu)
+- Associate `pdm.lock` with `TOML` syntax, see #2410
+- `Todo.txt`: Fix highlighting of contexts and projects at beginning of done.txt, see #2411
+- `cmd-help`: overhaul scope names (colors) to improve theme support; misc syntax improvements. See #2419 (@victor-gp)
+- Added support for Crontab, see #2509 (@keith-hall)
+
+## Themes
+
+## `bat` as a library
+
+- `PrettyPrinter::header` correctly displays a header with the filename, see #2378 and #2406 (@cstyles)
+
+
+# v0.22.1
+
+## Bugfixes
+
+- Bring back pre-processing of ANSI escape characters to so that some common `bat` use cases starts working again. See #2308 (@Enselic)
+
+# v0.22.0
+
+## Features
+
+- Make the default macOS theme depend on Dark Mode. See #2197, #1746 (@Enselic)
+- Support for separate system and user config files. See #668 (@patrickpichler)
+
+## Bugfixes
+
+- Prevent fork nightmare with `PAGER=batcat`. See #2235 (@johnmatthiggins)
+- Make `--no-paging`/`-P` override `--paging=...` if passed as a later arg, see #2201 (@themkat)
+- `--map-syntax` and `--ignored-suffix` now works together, see #2093 (@czzrr)
+- Strips byte order mark from output when in non-loop-through mode. See #1922 (@dag-h)
+
+## Other
+
+- Relaxed glibc requirements on amd64, see #2106 and #2194 (@sharkdp)
+- Improved fish completions. See #2275 (@zgracem)
+- Stop pre-processing ANSI escape characters. Syntax highlighting on ANSI escaped input is not supported. See #2185 and #2189 (@Enselic)
+
+## Syntaxes
+
+- NSE (Nmap Scripting Engine) is mapped to Lua, see #2151 (@Cre3per)
+- Correctly color `fstab` dump and pass fields, see #2246 (@yuvalmo)
+- Update `Command Help` syntax, see #2255
+- `Julia`: Fix syntax highlighting for function name starting with `struct`, see #2230
+- Minor update to `LiveScript`, see #2291
+- Associate `.mts` and `.cts` files with the `TypeScript` syntax. See #2236 (@kidonng)
+- Fish history is mapped to YAML. See #2237 (@kidonng)
+
+## `bat` as a library
+
+- Make `bat::PrettyPrinter::syntaxes()` iterate over new `bat::Syntax` struct instead of `&syntect::parsing::SyntaxReference`. See #2222 (@Enselic)
+- Clear highlights after printing, see #1919 and #1920 (@rhysd)
+
+
+# v0.21.0
+
+## Features
+
+- Correctly render tab stops in `--show-all`, see #2038 (@Synthetica9)
+- Add a `--style=default` option and make it the default. It is less verbose than `full`, see #2061 (@IsaacHorvath)
+- Enable BusyBox `less` as pager, see #2162 (@nfisher1226)
+- File extensions are now matched case-insensitively. See #1854, #2181 (@Enselic)
+
+## Bugfixes
+
+- Bump `regex` dependency from 1.5.4 to 1.5.5 to fix [CVE-2022-24713](https://blog.rust-lang.org/2022/03/08/cve-2022-24713.html), see #2145, #2139 (@Enselic)
+- `bat` no longer crashes when encountering files that references missing syntaxes. See #915, #2181 (@Enselic)
+
+## Performance
+
+- Skip syntax highlighting on long lines (> 16384 chars) to help improve performance. See #2165 (@keith-hall)
+- Vastly improve startup time by lazy-loading syntaxes via syntect 5.0.0. This makes bat display small files ~75% faster than before. See #951, #2181 (@Enselic)
+
+## Other
+
+- Include info about custom assets in `--diagnostics` if used. See #2107, #2144 (@Enselic)
+
+## Syntaxes
+
+- Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
+- log syntax: improved handling of escape characters in double quoted strings. See #2123 (@keith-hall)
+- Associate `/var/spool/mail/*` and `/var/mail/*` with the `Email` syntax. See #2156 (@cyqsimon)
+- Added cmd-help syntax to scope --help messages. See #2148 (@victor-gp)
+- Slightly adjust Zig syntax. See #2136 (@Enselic)
+- Associate `.inf` files with the `INI` syntax. See #2190 (@Enselic)
+
+## `bat` as a library
+
+- Allow configuration of `show_nonprintable` with `PrettyPrinter`, see #2142
+- The binary format of syntaxes.bin has been changed due to syntaxes now being lazy-loaded via syntect 5.0.0. See #2181 (@Enselic)
+- Mark `bat::error::Error` enum as `#[non_exhaustive]` to allow adding new variants without future semver breakage. See #2181 (@Enselic)
+- Change `Error::SyntectError(syntect::LoadingError)` to `Error::SyntectError(syntect::Error)`. See #2181 (@Enselic)
+- Add `Error::SyntectLoadingError(syntect::LoadingError)` enum variant. See #2181 (@Enselic)
+
+
+# v0.20.0
+
+## Features
+
+- New style component `header-filesize` to show size of the displayed file in the header. See #1988 (@mdibaiee)
+- Use underline for line highlighting on ANSI, see #1730 (@mdibaiee)
+
+## Bugfixes
+
+- Fix bash completion on bash 3.x and bash-completion 1.x. See #2066 (@joshpencheon)
+
+## Syntaxes
+
+- `GraphQL`: Add support for interfaces implementing interfaces and consider ampersand an operator. See #2000
+- Associate `_vimrc` and `_gvimrc` files with the `VimL` syntax. See #2002
+- Associate `poetry.lock` files with the `TOML` syntax. See #2049
+- Associate `.mesh`, `.task`, `.rgen`, `.rint`, `.rahit`, `.rchit`, `.rmiss`, and `.rcall` with the `GLSL` syntax. See #2050
+- Added support for `JQ` syntax, see #2072
+- Properly associate global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`. See #2067 (@cyqsimon)
+
+## `bat` as a library
+
+- Exposed `get_syntax_set` and `get_theme` methods on `HighlightingAssets`. See #2030 (@dandavison)
+- Added `HeaderFilename` and `HeaderFilesize` to `StyleComponent` enum, and mark it `#[non_exhaustive]`. See #1988 (@mdibaiee)
+
+
+# v0.19.0
+
+## Performance
+
+- Reduce startup time in loop-through mode (e.g. when redirecting output) by 90%. See #1747 (@Enselic)
+- Load themes lazily to make bat start 25% faster when disregarding syntax load time. See #1969 (@Enselic)
+- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
+- Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
+- Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
+- Load custom assets as fast as integrated assets, see #1753 (@Enselic)
+
+## Features
+
 - Support for `x:-delta` (minus) syntax in line ranges (e.g. `20:-10`). See  #1901 (@bojan88)
 - Support for `--ignored-suffix` argument. See #1892 (@bojan88)
 - `$BAT_CONFIG_DIR` is now a recognized environment variable. It has precedence over `$XDG_CONFIG_HOME`, see #1727 (@billrisher)
 - Support for `x:+delta` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
+- Add new `--acknowledgements` option that gives credit to theme and syntax definition authors. See #1971 (@Enselic)
+- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
 
 ## Bugfixes
 
-- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
 - First line not shown in diff context. See #1891 (@divagant-martian)
 - Do not ignore syntaxes that handle file names with a `*.conf` extension. See #1703 (@cbolgiano)
-
-## Performance
-
-- Load cached assets as fast as integrated assets, see #1753 (@Enselic)
-- Greatly reduce startup time in loop-through mode, e.g. when redirecting output. Instead of *50 ms* - *100 ms*, startup takes *5 ms* - *10 ms*. See #1747 (@Enselic)
 
 ## Other
 
 - Add PowerShell completion, see #1826 (@rashil2000)
-- Minimum supported Rust version (MSRV) bumped to 1.46
-- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
+- Minimum supported Rust version (MSRV) bumped to 1.51, see #1994 (@mdibaiee)
 
 ## Syntaxes
 
@@ -36,18 +346,17 @@
 - LiveScript, see #1915 (@Enselic)
 - MediaWiki, see #1925 (@sorairolake)
 - The `requirements.txt` syntax has been removed due to incompatible license requirements.
-
-## New themes
-
+- Dart, new highlighter, see #1959 (@Ersikan)
+- SCSS and Sass syntaxes updated, see #1766 (@Enselic)
+- PowerShell syntax updated, see #1935 (@Enselic)
+- TypeScript syntax updated, see #1834 (@Enselic)
 
 ## `bat` as a library
 
 - Deprecate `HighlightingAssets::syntaxes()` and `HighlightingAssets::syntax_for_file_name()`. Use `HighlightingAssets::get_syntaxes()` and `HighlightingAssets::get_syntax_for_path()` instead. They return a `Result` which is needed for upcoming lazy-loading work to improve startup performance. They also return which `SyntaxSet` the returned `SyntaxReference` belongs to. See #1747, #1755, #1776, #1862 (@Enselic)
-- Remove `HighlightingAssets::from_files` and `HighlightingAssets::save_to_cache`. Instead of calling the former and then the latter you now make a single call to `bat::assets::build`. See #1802 (@Enselic)
+- Remove `HighlightingAssets::from_files` and `HighlightingAssets::save_to_cache`. Instead of calling the former and then the latter you now make a single call to `bat::assets::build`. See #1802, #1971 (@Enselic)
 - Replace  the `error::Error(error::ErrorKind, _)` struct and enum with an `error::Error` enum. `Error(ErrorKind::UnknownSyntax, _)` becomes `Error::UnknownSyntax`, etc. Also remove the `error::ResultExt` trait. These changes stem from replacing `error-chain` with `thiserror`. See #1820 (@Enselic)
-- Add new `MappingTarget` enum variant `MapExtensionToUnknown`. Refer to its docummentation for more information. Clients are adviced to treat `MapExtensionToUnknown` the same as `MapToUnknown` in exhaustive matches. See #1703 (@cbolgiano)
-
-
+- Add new `MappingTarget` enum variant `MapExtensionToUnknown`. Refer to its documentation for more information. Also mark `MappingTarget` as `#[non_exhaustive]` since more enum variants might be added in the future. See #1703 (@cbolgiano), #2012 (@Enselic)
 
 
 # v0.18.3

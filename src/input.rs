@@ -1,4 +1,5 @@
 use std::convert::TryFrom;
+use std::fs;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
@@ -87,6 +88,7 @@ impl<'a> InputKind<'a> {
 #[derive(Clone, Default)]
 pub(crate) struct InputMetadata {
     pub(crate) user_provided_name: Option<PathBuf>,
+    pub(crate) size: Option<u64>,
 }
 
 pub struct Input<'a> {
@@ -116,7 +118,7 @@ impl OpenedInput<'_> {
         self.metadata
             .user_provided_name
             .as_ref()
-            .or_else(|| match self.kind {
+            .or(match self.kind {
                 OpenedInputKind::OrdinaryFile(ref path) => Some(path),
                 _ => None,
             })
@@ -130,9 +132,14 @@ impl<'a> Input<'a> {
 
     fn _ordinary_file(path: &Path) -> Self {
         let kind = InputKind::OrdinaryFile(path.to_path_buf());
+        let metadata = InputMetadata {
+            size: fs::metadata(path).map(|m| m.len()).ok(),
+            ..InputMetadata::default()
+        };
+
         Input {
             description: kind.description(),
-            metadata: InputMetadata::default(),
+            metadata,
             kind,
         }
     }
@@ -190,7 +197,7 @@ impl<'a> Input<'a> {
             InputKind::StdIn => {
                 if let Some(stdout) = stdout_identifier {
                     let input_identifier = Identifier::try_from(clircle::Stdio::Stdin)
-                        .map_err(|e| format!("Stdin: Error identifying file: {}", e))?;
+                        .map_err(|e| format!("Stdin: Error identifying file: {e}"))?;
                     if stdout.surely_conflicts_with(&input_identifier) {
                         return Err("IO circle detected. The input from stdin is also an output. Aborting to avoid infinite loop.".into());
                     }
@@ -249,7 +256,7 @@ pub(crate) struct InputReader<'a> {
 }
 
 impl<'a> InputReader<'a> {
-    fn new<R: BufRead + 'a>(mut reader: R) -> InputReader<'a> {
+    pub(crate) fn new<R: BufRead + 'a>(mut reader: R) -> InputReader<'a> {
         let mut first_line = vec![];
         reader.read_until(b'\n', &mut first_line).ok();
 
